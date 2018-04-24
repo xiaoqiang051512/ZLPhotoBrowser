@@ -567,16 +567,14 @@ static BOOL _sortAscending;
 
 + (BOOL)judgeAssetisInLocalAblum:(PHAsset *)asset
 {
-    PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
-    option.networkAccessAllowed = NO;
-    option.synchronous = YES;
-    
-    __block BOOL isInLocalAblum = YES;
-    
-    [[PHCachingImageManager defaultManager] requestImageDataForAsset:asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
-        isInLocalAblum = imageData ? YES : NO;
-    }];
-    return isInLocalAblum;
+    if (@available(iOS 9.0, *)) {
+        NSArray *resourceArray = [PHAssetResource assetResourcesForAsset:asset];
+        BOOL bIsLocallayAvailable = [[resourceArray.firstObject valueForKey:@"locallyAvailable"] boolValue];
+        return bIsLocallayAvailable;
+    } else {
+        return YES;
+        // Fallback on earlier versions
+    }
 }
 
 + (void)getPhotosBytesWithArray:(NSArray<ZLPhotoModel *> *)photos completion:(void (^)(NSString *photosBytes))completion
